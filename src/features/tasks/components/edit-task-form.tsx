@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { cn, snakeCaseToTitleCase } from "@/lib/utils";
-import { useWorkspaceId } from "@/features/workspaces/hooks/use-workspace-id";
 import { ProjectAvatar } from "@/features/projects/components/project-avatar";
 import { MemberAvatar } from "@/features/members/components/member-avatar";
 
@@ -48,8 +47,6 @@ interface EditTaskFormProps {
 };
 
 export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialValues }: EditTaskFormProps) => {
-  const workspaceId = useWorkspaceId();
-
   const { mutate, isPending } = useUpdateTask();
 
   const form = useForm<z.infer<typeof createTaskSchema>>({
