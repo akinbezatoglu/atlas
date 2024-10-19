@@ -4,7 +4,7 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 
 import { DATABASE_ID, IMAGES_BUCKET_ID, MEMBERS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
-import { sessionMiddleware } from "@/lib/session-middleware";
+import { sessionForVisitorMiddleware, sessionMiddleware } from "@/lib/session-middleware";
 import { generateInviteCode } from "@/lib/utils";
 
 
@@ -73,6 +73,27 @@ const app = new Hono()
         WORKSPACES_ID,
         workspaceId
       );
+
+      return c.json({ data: workspace })
+    }
+  )
+  .get(
+    "/:workspaceId/visitor",
+    sessionForVisitorMiddleware,
+    async (c) => {
+      const databases = c.get("databases");
+
+      const { workspaceId } = c.req.param();
+
+      const workspace = await databases.getDocument<Workspace>(
+        DATABASE_ID,
+        WORKSPACES_ID,
+        workspaceId
+      );
+
+      if (!workspace.enableForVisitors) {
+        return c.json({ error: `${workspace.name} is private. Only members can view this workspace` }, 403);
+      }
 
       return c.json({ data: workspace })
     }
@@ -269,6 +290,146 @@ const app = new Hono()
       });
     }
   )
+  .get(
+    "/:workspaceId/analytics/visitor",
+    sessionForVisitorMiddleware,
+    async (c) => {
+      const databases = c.get("databases");
+
+      const { workspaceId } = c.req.param();
+
+      const workspace = await databases.getDocument<Workspace>(
+        DATABASE_ID,
+        WORKSPACES_ID,
+        workspaceId
+      );
+
+      if (!workspace.enableForVisitors) {
+        return c.json({ error: `${workspace.name} is private. Only members can view this workspace` }, 403);
+      }
+
+      const now = new Date();
+      const thisMonthStart = startOfMonth(now);
+      const thisMonthEnd = endOfMonth(now);
+      const lastMonthStart = startOfMonth(subMonths(now, 1));
+      const lastMonthEnd = endOfMonth(subMonths(now, 1));
+
+      const thisMonthTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      const taskCount = thisMonthTasks.total;
+      const taskDifference = taskCount - lastMonthTasks.total;
+
+      const thisMonthIncompletedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthIncompletedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      const incompletedTaskCount = thisMonthIncompletedTasks.total;
+      const incompletedTaskDifference = incompletedTaskCount - lastMonthIncompletedTasks.total;
+
+
+      const thisMonthCompletedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.equal("status", TaskStatus.DONE),
+          Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthCompletedTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.equal("status", TaskStatus.DONE),
+          Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      const completedTaskCount = thisMonthCompletedTasks.total;
+      const completedTaskDifference = completedTaskCount - lastMonthCompletedTasks.total;
+
+      const thisMonthOverDueTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.lessThan("dueDate", now.toISOString()),
+          Query.greaterThanEqual("$createdAt", thisMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", thisMonthEnd.toISOString()),
+        ]
+      );
+
+      const lastMonthOverDueTasks = await databases.listDocuments(
+        DATABASE_ID,
+        TASKS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.notEqual("status", TaskStatus.DONE),
+          Query.lessThan("dueDate", now.toISOString()),
+          Query.greaterThanEqual("$createdAt", lastMonthStart.toISOString()),
+          Query.lessThanEqual("$createdAt", lastMonthEnd.toISOString()),
+        ]
+      );
+
+      const overDueTaskCount = thisMonthOverDueTasks.total;
+      const overDueTaskDifference = overDueTaskCount - lastMonthOverDueTasks.total;
+
+
+      return c.json({
+        data: {
+          taskCount,
+          taskDifference,
+          completedTaskCount,
+          completedTaskDifference,
+          incompletedTaskCount,
+          incompletedTaskDifference,
+          overDueTaskCount,
+          overDueTaskDifference,
+        }
+      });
+    }
+  )
   .post(
     "/",
     zValidator("form", createWorkspaceSchema),
@@ -333,7 +494,7 @@ const app = new Hono()
       const user = c.get("user");
 
       const { workspaceId } = c.req.param();
-      const { name, image } = c.req.valid("form");
+      const { name, image, enableForVisitors } = c.req.valid("form");
 
       const member = await getMember({
         databases,
@@ -371,6 +532,7 @@ const app = new Hono()
         {
           name,
           imageUrl: uploadedImageUrl,
+          enableForVisitors,
         }
       );
 

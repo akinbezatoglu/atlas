@@ -7,11 +7,12 @@ import { endOfMonth, startOfMonth, subMonths } from "date-fns";
 import { MemberRole } from "@/features/members/types";
 import { TaskStatus } from "@/features/tasks/types";
 import { getMember } from "@/features/members/utils";
-import { sessionMiddleware } from "@/lib/session-middleware";
-import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID, TASKS_ID } from "@/config";
+import { sessionForVisitorMiddleware, sessionMiddleware } from "@/lib/session-middleware";
+import { DATABASE_ID, IMAGES_BUCKET_ID, PROJECTS_ID, TASKS_ID, WORKSPACES_ID } from "@/config";
 
 import { createProjectSchema, updateProjectSchema } from "../schemas";
 import { Project } from "../types";
+import { Workspace } from "@/features/workspaces/types";
 
 
 const app = new Hono()
@@ -37,6 +38,44 @@ const app = new Hono()
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const projects = await databases.listDocuments<Project>(
+        DATABASE_ID,
+        PROJECTS_ID,
+        [
+          Query.equal("workspaceId", workspaceId),
+          Query.orderDesc("$createdAt"),
+        ]
+      );
+
+
+      return c.json({ data: { projects } });
+    }
+  )
+  .get(
+    "/visitor",
+    sessionForVisitorMiddleware,
+    zValidator("query", z.object({ workspaceId: z.string() })),
+    async (c) => {
+      const databases = c.get("databases");
+
+      const { workspaceId } = c.req.valid("query");
+
+      if (!workspaceId) {
+        return c.json({ error: "Missing workspaceId" }, 400);
+      }
+
+      console.log(workspaceId)
+
+      const workspace = await databases.getDocument<Workspace>(
+        DATABASE_ID,
+        WORKSPACES_ID,
+        workspaceId
+      );
+
+      if (!workspace.enableForVisitors) {
+        return c.json({ error: `${workspace.name} is private. Only members can view this workspace` }, 403);
       }
 
       const projects = await databases.listDocuments<Project>(

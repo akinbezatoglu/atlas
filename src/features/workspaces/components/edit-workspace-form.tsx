@@ -47,7 +47,7 @@ interface EditWorkspaceFormProps {
 
 export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceFormProps) => {
   const router = useRouter();
-  
+
   const { mutate, isPending } = useUpdateWorkspace();
   const {
     mutate: deleteWorkspace,
@@ -108,6 +108,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
     const finalValues = {
       ...values,
       image: values.image instanceof File ? values.image : "",
+      enableForVisitors: values.enableForVisitors === true ? "true" : "false",
     };
     mutate({
       form: finalValues,
@@ -134,7 +135,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
       <DeleteDialog />
       <ResetInviteCodeDialog />
       <Card className="w-full h-full border-none shadow-none">
-        <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0">
+        <CardHeader className="flex flex-row items-center gap-x-4 p-4 space-y-0">
           <Button size="sm" variant="secondary" onClick={onCancel ? onCancel : () => router.push(`/workspaces/${initialValues.$id}`)}>
             <ArrowLeftIcon className="size-4 mr-2" />
             Back
@@ -146,7 +147,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
         <div className="px-7">
           <DottedSeparator />
         </div>
-        <CardContent className="p-7">
+        <CardContent className="p-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
               <div className="flex flex-col gap-y-4">
@@ -240,6 +241,28 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
                     </div>
                   )}
                 />
+                <FormField
+                  control={form.control}
+                  name="enableForVisitors"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start py-4">
+                      <FormLabel className="py-2">Workspace Visibility</FormLabel>
+                      <FormControl>
+                        <div className="flex items-center gap-x-4">
+                          <span>{field.value ? "Public" : "Private"}</span>
+                          <div
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 ${field.value ? "bg-green-500" : "bg-gray-400"}`}
+                            onClick={() => field.onChange(!field.value)}
+                          >
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${field.value ? "translate-x-6" : "translate-x-1"}`}
+                            />
+                          </div>
+                        </div>
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
               </div>
               <DottedSeparator className="py-7" />
               <div className="flex items-center justify-between">
@@ -266,7 +289,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
         </CardContent>
       </Card>
       <Card className="w-full h-full shadow-none border-none">
-        <CardContent className="p-7">
+        <CardContent className="p-4">
           <div className="flex flex-col">
             <h3 className="font-bold">Invite Members</h3>
             <p className="text-sm text-muted-foreground">
@@ -299,7 +322,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
         </CardContent>
       </Card>
       <Card className="w-full h-full shadow-none border border-amber-700 bg-amber-50">
-        <CardContent className="p-7">
+        <CardContent className="p-4">
           <div className="flex flex-col">
             <h3 className="font-bold">Danger Zone</h3>
             <p className="text-sm text-muted-foreground">

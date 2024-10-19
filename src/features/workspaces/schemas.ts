@@ -16,4 +16,11 @@ export const updateWorkspaceSchema = z.object({
     z.string().transform((value) => value === "" ? undefined : value),
   ])
     .optional(),
+  enableForVisitors: z.union([z.boolean(), z.string()])
+    .transform((value) => {
+      if (typeof value === "string") {
+        return value === "true";
+      }
+      return value;
+    }).optional(),
 });

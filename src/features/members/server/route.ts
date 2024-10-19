@@ -2,12 +2,13 @@ import { z } from "zod";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 
-import { sessionMiddleware } from "@/lib/session-middleware";
+import { sessionForVisitorMiddleware, sessionMiddleware } from "@/lib/session-middleware";
 import { createAdminClient } from "@/lib/appwrite";
 import { getMember } from "../utils";
-import { DATABASE_ID, MEMBERS_ID } from "@/config";
+import { DATABASE_ID, MEMBERS_ID, WORKSPACES_ID } from "@/config";
 import { Query } from "node-appwrite";
 import { Member, MemberRole } from "../types";
+import { Workspace } from "@/features/workspaces/types";
 
 const app = new Hono()
   .get(
@@ -28,6 +29,56 @@ const app = new Hono()
 
       if (!member) {
         return c.json({ error: "Unauthorized" }, 401);
+      }
+
+      const members = await databases.listDocuments<Member>(
+        DATABASE_ID,
+        MEMBERS_ID,
+        [Query.equal("workspaceId", workspaceId)]
+      );
+
+      const populatedMembers = await Promise.all(
+        members.documents.map(async (member) => {
+          const user = await users.get(member.userId);
+
+          return {
+            ...member,
+            name: user.name,
+            email: user.email,
+          }
+        })
+      );
+
+      return c.json({
+        data: {
+          ...members,
+          documents: populatedMembers,
+        },
+      });
+    }
+  )
+  .get(
+    "/visitor",
+    sessionForVisitorMiddleware,
+    zValidator("query", z.object({ workspaceId: z.string() })),
+    async (c) => {
+      const { users } = await createAdminClient();
+      const databases = c.get("databases");
+
+      const { workspaceId } = c.req.valid("query");
+
+      if (!workspaceId) {
+        return c.json({ error: "Missing workspaceId" }, 400);
+      }
+
+      const workspace = await databases.getDocument<Workspace>(
+        DATABASE_ID,
+        WORKSPACES_ID,
+        workspaceId
+      );
+
+      if (!workspace.enableForVisitors) {
+        return c.json({ error: `${workspace.name} is private. Only members can view this workspace` }, 403);
       }
 
       const members = await databases.listDocuments<Member>(
