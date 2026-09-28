@@ -30,7 +30,7 @@ export const columns: ColumnDef<Task>[] = [
         </Button>
       )
     },
-    cell: ({row}) => {
+    cell: ({ row }) => {
       const name = row.original.name;
 
       return <p className="line-clamp-1">{name}</p>
@@ -49,8 +49,9 @@ export const columns: ColumnDef<Task>[] = [
         </Button>
       )
     },
-    cell: ({row}) => {
+    cell: ({ row }) => {
       const project = row.original.project;
+      if (!project) return null;
 
       return (
         <div className="flex items-center gap-x-2 text-sm font-medium">
@@ -77,8 +78,9 @@ export const columns: ColumnDef<Task>[] = [
         </Button>
       )
     },
-    cell: ({row}) => {
+    cell: ({ row }) => {
       const assignee = row.original.assignee;
+      if (!assignee) return null;
 
       return (
         <div className="flex items-center gap-x-2 text-sm font-medium">
@@ -105,7 +107,7 @@ export const columns: ColumnDef<Task>[] = [
         </Button>
       )
     },
-    cell: ({row}) => {
+    cell: ({ row }) => {
       const dueDate = row.original.dueDate;
 
       return <TaskDate value={dueDate} />
@@ -124,7 +126,7 @@ export const columns: ColumnDef<Task>[] = [
         </Button>
       )
     },
-    cell: ({row}) => {
+    cell: ({ row }) => {
       const status = row.original.status;
 
       return <Badge variant={status as TaskStatus}>{snakeCaseToTitleCase(status)}</Badge>
@@ -132,7 +134,7 @@ export const columns: ColumnDef<Task>[] = [
   },
   {
     id: "actions",
-    cell: ({row}) => {
+    cell: ({ row }) => {
       const id = row.original.id;
       const projectId = row.original.projectId;
 

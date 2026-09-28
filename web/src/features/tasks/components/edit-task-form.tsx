@@ -53,12 +53,18 @@ export const EditTaskForm = ({ onCancel, projectOptions, memberOptions, initialV
     resolver: zodResolver(createTaskSchema.omit({ workspaceId: true, description: true })),
     defaultValues: {
       ...initialValues,
+      name: initialValues.name ?? undefined,
+      description: initialValues.description ?? undefined,
       dueDate: initialValues.dueDate ? new Date(initialValues.dueDate) : undefined,
     },
   });
 
   const onSubmit = (values: z.infer<typeof createTaskSchema>) => {
-    mutate({ json: values, param: { taskId: initialValues.id } }, {
+    const finalValues = {
+      ...values,
+      dueDate: values.dueDate ? values.dueDate.toISOString() : undefined,
+    };
+    mutate({ json: finalValues, param: { taskId: initialValues.id } }, {
       onSuccess: () => {
         form.reset();
         onCancel?.();

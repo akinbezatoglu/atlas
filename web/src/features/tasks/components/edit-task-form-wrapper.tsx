@@ -22,7 +22,7 @@ export const EditTaskFromWrapper = ({
 }: EditTaskFromWrapperProps) => {
   const workspaceId = useWorkspaceId();
 
-  const { data: initialValues, isLoading: isLoadingTasks} = useGetTask({
+  const { data: initialValues, isLoading: isLoadingTasks } = useGetTask({
     taskId: id,
   });
 
@@ -32,7 +32,7 @@ export const EditTaskFromWrapper = ({
   const projectOptions = projects?.documents.map((project) => ({
     id: project.id,
     name: project.name,
-    imageUrl: project.imageUrl,
+    imageUrl: project.imageUrl || "",
   }));
 
   const memberOptions = members?.documents.map((project) => ({

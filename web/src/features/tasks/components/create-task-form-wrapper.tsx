@@ -21,7 +21,7 @@ export const CreateTaskFromWrapper = ({
   const projectOptions = projects?.documents.map((project) => ({
     id: project.id,
     name: project.name,
-    imageUrl: project.imageUrl,
+    imageUrl: project.imageUrl || "",
   }));
 
   const memberOptions = members?.documents.map((project) => ({

@@ -45,7 +45,7 @@ interface EditProjectFormProps {
 
 export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProps) => {
   const router = useRouter();
-  
+
   const { mutate, isPending } = useUpdateProject();
   const {
     mutate: deleteProject,
@@ -64,6 +64,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
     resolver: zodResolver(updateProjectSchema),
     defaultValues: {
       ...initialValues,
+      name: initialValues.name ?? undefined,
       image: initialValues.imageUrl ?? "",
     },
   });
@@ -85,6 +86,7 @@ export const EditProjectForm = ({ onCancel, initialValues }: EditProjectFormProp
   const onSubmit = (values: z.infer<typeof updateProjectSchema>) => {
     const finalValues = {
       ...values,
+      name: values.name || "",
       image: values.image instanceof File ? values.image : "",
     };
     mutate({

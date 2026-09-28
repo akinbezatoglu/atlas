@@ -24,7 +24,8 @@ export const TaskIdClient = () => {
   return (
     <div className="flex flex-col">
       <TaskBreadcrumbs
-        project={data.project}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        project={data.project as any}
         task={data}
       />
       <DottedSeparator className="my-6" />

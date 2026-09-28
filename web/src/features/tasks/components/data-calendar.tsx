@@ -39,11 +39,11 @@ interface CustomToolbarProps {
   onNavigate: (action: "PREV" | "NEXT" | "TODAY") => void;
 }
 
-const CustomToolbar = ({date, onNavigate}: CustomToolbarProps) => {
+const CustomToolbar = ({ date, onNavigate }: CustomToolbarProps) => {
   return (
     <div className="flex mb-4 gap-x-2 items-center w-full lg:w-auto justify-center lg:justify-start">
       <Button
-        onClick={()=> onNavigate("PREV")}
+        onClick={() => onNavigate("PREV")}
         variant="secondary"
         size="icon"
       >
@@ -54,7 +54,7 @@ const CustomToolbar = ({date, onNavigate}: CustomToolbarProps) => {
         <p className="text-sm">{format(date, "MMMM yyyy")}</p>
       </div>
       <Button
-        onClick={()=> onNavigate("NEXT")}
+        onClick={() => onNavigate("NEXT")}
         variant="secondary"
         size="icon"
       >
@@ -107,12 +107,14 @@ export function DataCalendar({
         weekdayFormat: (date, culture, localizer) => localizer?.format(date, "EEE", culture) ?? ""
       }}
       components={{
-        eventWrapper: ({event}) => (
+        eventWrapper: ({ event }) => (
           <EventCard
             id={event.id}
             title={event.title || "Event"}
-            assignee={event.assignee as unknown as Record<string, unknown>}
-            project={event.project as unknown as Record<string, unknown>}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            assignee={event.assignee as any}
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            project={event.project as any}
             status={event.status}
           />
         ),

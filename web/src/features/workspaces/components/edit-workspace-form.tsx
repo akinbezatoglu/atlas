@@ -76,6 +76,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
     resolver: zodResolver(updateWorkspaceSchema),
     defaultValues: {
       ...initialValues,
+      name: initialValues.name ?? undefined,
       image: initialValues.imageUrl ?? "",
     },
   });
@@ -107,6 +108,7 @@ export const EditWorkspaceForm = ({ onCancel, initialValues }: EditWorkspaceForm
   const onSubmit = (values: z.infer<typeof updateWorkspaceSchema>) => {
     const finalValues = {
       ...values,
+      name: values.name || "",
       image: values.image instanceof File ? values.image : "",
       enableForVisitors: values.enableForVisitors === true ? "true" : "false",
     };
