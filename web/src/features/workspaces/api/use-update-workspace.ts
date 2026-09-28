@@ -4,7 +4,7 @@ import { api } from "@/lib/api-client";
 import type { Workspace } from "@/lib/types";
 
 type ResponseType = { data: Workspace };
-type RequestType = { form: any; param: { workspaceId: string } };
+type RequestType = { form: { name: string } | FormData; param: { workspaceId: string } };
 
 export const useUpdateWorkspace = () => {
   const queryClient = useQueryClient();

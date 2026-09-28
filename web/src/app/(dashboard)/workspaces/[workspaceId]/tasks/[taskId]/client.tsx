@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useGetTask } from "@/features/tasks/api/use-get-task";

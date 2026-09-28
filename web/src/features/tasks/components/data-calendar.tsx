@@ -111,8 +111,8 @@ export function DataCalendar({
           <EventCard
             id={event.id}
             title={event.title || "Event"}
-            assignee={event.assignee as any}
-            project={event.project as any}
+            assignee={event.assignee as unknown as Record<string, unknown>}
+            project={event.project as unknown as Record<string, unknown>}
             status={event.status}
           />
         ),

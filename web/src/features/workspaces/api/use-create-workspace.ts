@@ -5,7 +5,7 @@ import { api } from "@/lib/api-client";
 import type { Workspace } from "@/lib/types";
 
 type ResponseType = { data: Workspace };
-type RequestType = { form: any }; // Original components pass { form } which might be FormData or an object
+type RequestType = { form: { name: string } | FormData }; // Original components pass { form } which might be FormData or an object
 
 export const useCreateWorkspace = () => {
   const router = useRouter();

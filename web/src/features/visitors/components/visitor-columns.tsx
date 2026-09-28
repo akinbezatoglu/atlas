@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { ColumnDef } from "@tanstack/react-table";

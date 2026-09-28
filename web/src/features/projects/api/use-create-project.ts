@@ -5,7 +5,7 @@ import { api } from "@/lib/api-client";
 import type { Project } from "@/lib/types";
 
 type ResponseType = { data: Project };
-type RequestType = { form: any };
+type RequestType = { form: { name: string; workspaceId: string } | FormData };
 
 export const useCreateProject = () => {
   const router = useRouter();

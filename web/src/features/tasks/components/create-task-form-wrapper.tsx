@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useGetProjects } from "@/features/projects/api/use-get-projects";

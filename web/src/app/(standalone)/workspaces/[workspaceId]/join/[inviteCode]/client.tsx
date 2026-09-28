@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useGetWorkspaceInfo } from "@/features/workspaces/api/use-get-workspace-info";

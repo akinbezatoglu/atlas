@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { useProjectId } from "@/features/projects/hooks/use-project-id";

@@ -1,8 +1,6 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 
-import { TaskStatus } from "@/features/tasks/types"
-
 import { cn } from "@/lib/utils"
 
 const badgeVariants = cva(

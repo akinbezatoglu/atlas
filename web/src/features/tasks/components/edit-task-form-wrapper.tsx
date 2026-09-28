@@ -1,4 +1,3 @@
-// @ts-nocheck
 'use client'
 
 import { Loader } from "lucide-react";

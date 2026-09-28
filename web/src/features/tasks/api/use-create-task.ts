@@ -4,7 +4,7 @@ import { api } from "@/lib/api-client";
 import type { Task } from "@/lib/types";
 
 type ResponseType = { data: Task };
-type RequestType = { json: any }; // Using any here to match old behavior, actual type is inferred from schema
+type RequestType = { json: Record<string, unknown> }; // Using unknown here to match old behavior, actual type is inferred from schema
 
 export const useCreateTask = () => {
   const queryClient = useQueryClient();

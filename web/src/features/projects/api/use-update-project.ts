@@ -4,7 +4,7 @@ import { api } from "@/lib/api-client";
 import type { Project } from "@/lib/types";
 
 type ResponseType = { data: Project };
-type RequestType = { form: any; param: { projectId: string } };
+type RequestType = { form: { name: string } | FormData; param: { projectId: string } };
 
 export const useUpdateProject = () => {
   const queryClient = useQueryClient();
